@@ -37,7 +37,7 @@ public class MecanumTeleOp extends OpMode {
 
         robot.drive(drive, strafe, turn);
 
-        if (gamepad1.a) {
+        while (gamepad1.a) {
             robot.claw.setPosition(RobotHardware.CLAW_OPEN);
         }
         if (gamepad1.b) {
