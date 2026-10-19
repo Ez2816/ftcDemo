@@ -49,12 +49,10 @@ public class RobotHardware {
 
         // If any wheel would go over 100%, scale them all down together.
         double max = Math.max(Math.max(Math.abs(lf), Math.abs(rf)), Math.max(Math.abs(lb), Math.abs(rb)));
-        if (max > 1.0) {
-            lf /= max;
-            rf /= max;
-            lb /= max;
-            rb /= max;
-        }
+        lf /= max;
+        rf /= max;
+        lb /= max;
+        rb /= max;
 
         leftFront.setPower(lf);
         rightFront.setPower(rf);
