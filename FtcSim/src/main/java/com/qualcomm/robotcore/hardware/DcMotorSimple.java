@@ -2,11 +2,7 @@ package com.qualcomm.robotcore.hardware;
 
 public interface DcMotorSimple extends HardwareDevice {
     enum Direction {
-        FORWARD, REVERSE;
-
-        public Direction inverted() {
-            return this == FORWARD ? REVERSE : FORWARD;
-        }
+        FORWARD, REVERSE
     }
 
     void setDirection(Direction direction);
