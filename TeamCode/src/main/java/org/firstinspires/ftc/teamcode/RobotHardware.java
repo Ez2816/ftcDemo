@@ -21,7 +21,7 @@ public class RobotHardware {
     public RobotHardware(HardwareMap hardwareMap) {
         leftFront = hardwareMap.get(DcMotor.class, "leftFront");
         rightFront = hardwareMap.get(DcMotor.class, "rightFront");
-        leftBack = hardwareMap.get(DcMotor.class, "leftBack");
+        leftBack = hardwareMap.get(DcMotor.class, "leftback");
         rightBack = hardwareMap.get(DcMotor.class, "rightBack");
         claw = hardwareMap.get(Servo.class, "claw");
 
