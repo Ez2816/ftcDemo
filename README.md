@@ -27,20 +27,33 @@ The first run downloads Gradle and takes a minute. After that it takes a few sec
 | OpMode | Test | Checks |
 |---|---|---|
 | `Mecanum TeleOp` | `MecanumTeleOpTest` | the sticks drive, strafe and turn the right way; motor power never goes over 100%; slow mode; claw buttons; STOP stops the motors |
-| `Drive Forward 24in` | `DriveForwardAutoTest` | ends 24" forward without drifting or turning; drops the sample; shows "Done" |
 
-The sim also catches classic FTC mistakes. For example, a `while` loop in autonomous that never
-checks `opModeIsActive()` fails with:
+The robot code is just two files: `RobotHardware.java` (motors and mecanum math) and
+`MecanumTeleOp.java` (the driver controls).
+
+## Demo: planted bugs
+
+Each `bug/*` branch is `main` with one small mistake in one of those two files:
+
+| Branch | File | What the robot does |
+|---|---|---|
+| `bug/backwards` | `MecanumTeleOp.java` | stick up drives backward |
+| `bug/claw` | `MecanumTeleOp.java` | A closes the claw and B opens it |
+| `bug/spins` | `RobotHardware.java` | curves and twists instead of driving straight |
+| `bug/strafe` | `RobotHardware.java` | turns instead of strafing |
+| `bug/overpower` | `RobotHardware.java` | full stick asks a motor for more than 100% power |
 
 ```
-OpModeStuckException: OpMode was still running 1 s after STOP was pressed. Does every loop check opModeIsActive()?
+git checkout bug/backwards
 ```
+
+then in Claude Code type `/fix-robot`. Switch back with `git checkout main`.
 
 ## Using an AI agent on this repo
 
 Agents read `.github/copilot-instructions.md` (Copilot) and `CLAUDE.md` (Claude Code). Those files explain
 the layout and the ground rules: fix the robot code, not the tests or the sim.
 
-Try a prompt like:
+With Claude Code, run the `/fix-robot` skill (`.claude/skills/fix-robot/SKILL.md`). With other agents, try a prompt like:
 
 > Run the tests. One is failing. Find the bug in TeamCode, explain what the robot would do on the field, and fix it.

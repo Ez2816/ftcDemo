@@ -5,23 +5,22 @@
       "label": "FTC: Run all tests",
       "type": "shell",
       "command": "./gradlew test --console=plain",
-      "windows": { "command": ".\\gradlew.bat test --console=plain" },
-      "group": { "kind": "test", "isDefault": true },
+      "windows": {
+        "command": ".\\gradlew.bat test --console=plain"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
       "problemMatcher": []
     },
     {
       "label": "FTC: Test TeleOp",
       "type": "shell",
       "command": "./gradlew test --console=plain --tests '*MecanumTeleOpTest*'",
-      "windows": { "command": ".\\gradlew.bat test --console=plain --tests *MecanumTeleOpTest*" },
-      "group": "test",
-      "problemMatcher": []
-    },
-    {
-      "label": "FTC: Test Autonomous",
-      "type": "shell",
-      "command": "./gradlew test --console=plain --tests '*DriveForwardAutoTest*'",
-      "windows": { "command": ".\\gradlew.bat test --console=plain --tests *DriveForwardAutoTest*" },
+      "windows": {
+        "command": ".\\gradlew.bat test --console=plain --tests *MecanumTeleOpTest*"
+      },
       "group": "test",
       "problemMatcher": []
     }

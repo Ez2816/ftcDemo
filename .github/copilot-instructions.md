@@ -8,7 +8,6 @@ so OpModes can be tested without a robot. GitHub Copilot and Claude Code both re
 - `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/` is the team's robot code. **Fix bugs here.**
   - `RobotHardware.java`: the hardware map plus mecanum drive math, shared by every OpMode
   - `MecanumTeleOp.java`: driver-controlled OpMode (iterative `OpMode`)
-  - `DriveForwardAuto.java`: autonomous OpMode (`LinearOpMode`)
 - `TeamCode/src/test/java/...` holds JUnit tests that run the OpModes in the sim. **The tests are the spec.**
   - `TestRobot.java` describes the *physical* robot (wheel size, motor mounting). It is deliberately
     independent of `RobotHardware`.
