@@ -5,7 +5,7 @@ demo of AI coding agents (GitHub Copilot and Claude Code) finding and fixing rob
 
 ```
 TeamCode/   our robot code: OpModes and RobotHardware, the same as in a real FtcRobotController project
-FtcSim/     a stand-in for the FTC SDK, plus a physics sim that moves the robot on the field
+FtcSim/     a stand-in for the FTC SDK: pretend motors, servos, gamepads and Driver Station
 ```
 
 The OpModes import the real FTC classes (`com.qualcomm.robotcore.hardware.DcMotor`, `@TeleOp`,
@@ -24,30 +24,30 @@ The first run downloads Gradle and takes a minute. After that it takes a few sec
 
 ## What the tests check
 
-| OpMode | Test | Checks |
-|---|---|---|
-| `Mecanum TeleOp` | `MecanumTeleOpTest` | the sticks drive, strafe and turn the right way; motor power never goes over 100%; slow mode; claw buttons; STOP stops the motors |
+`MecanumTeleOpTest` acts like a driver: it pushes sticks and presses buttons, then checks what the
+code told the motors and the claw servo to do. It checks that the sticks drive, strafe and turn the
+right way, that letting go stops the robot, that power never goes over 100%, slow mode, the claw
+buttons, and STOP.
 
 The robot code is just two files: `RobotHardware.java` (motors and mecanum math) and
 `MecanumTeleOp.java` (the driver controls).
 
 ## Demo: planted bugs
 
-Each `bug/*` branch is `main` with one small mistake in one of those two files:
+Each `bug/*` branch is `main` with one small, common software mistake:
 
-| Branch | File | What the robot does |
-|---|---|---|
-| `bug/backwards` | `MecanumTeleOp.java` | stick up drives backward |
-| `bug/claw` | `MecanumTeleOp.java` | A closes the claw and B opens it |
-| `bug/spins` | `RobotHardware.java` | curves and twists instead of driving straight |
-| `bug/strafe` | `RobotHardware.java` | turns instead of strafing |
-| `bug/overpower` | `RobotHardware.java` | full stick asks a motor for more than 100% power |
+| Branch | File | Mistake | What the driver sees |
+|---|---|---|---|
+| `bug/wrong-name` | `RobotHardware.java` | a device name doesn't match the robot configuration | the OpMode crashes as soon as you press INIT |
+| `bug/infinite-loop` | `MecanumTeleOp.java` | a `while` loop inside `loop()` | press A and the whole robot freezes |
+| `bug/divide-by-zero` | `RobotHardware.java` | dividing by a number that can be 0 | let go of the sticks and the robot doesn't stop |
 
 ```
-git checkout bug/backwards
+git checkout bug/wrong-name
 ```
 
-then in Claude Code type `/fix-robot`. Switch back with `git checkout main`.
+then in Claude Code type `/fix-robot`. To replay it, throw away the fix with `git checkout -- .`.
+Switch back with `git checkout main`.
 
 ## Using an AI agent on this repo
 

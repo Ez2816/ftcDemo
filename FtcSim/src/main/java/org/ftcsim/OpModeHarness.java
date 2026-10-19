@@ -1,157 +1,88 @@
 package org.ftcsim;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Plays the role of the Driver Station: presses INIT, START and STOP.
- *
- * Iterative OpMode:
  * <pre>
  *   OpModeHarness h = new OpModeHarness(robot, new MyTeleOp());
  *   h.init(); h.start();
  *   robot.gamepad1.left_stick_y = -1;   // push stick up
- *   h.loopFor(1.0);                      // 1 second of loop() calls
+ *   h.loop();                            // one loop() call
  *   h.stop();
- * </pre>
- *
- * LinearOpMode:
- * <pre>
- *   OpModeHarness.runLinear(robot, new MyAuto());   // full 30 s autonomous period
  * </pre>
  */
 public class OpModeHarness {
-    public static final double LOOP_SECONDS = 0.020;
-    public static final double AUTO_SECONDS = 30.0;
-    static final double MAX_LOOP_SECONDS = 1.0;
-    static final double STOP_GRACE_SECONDS = 1.0;
-    static final double IDLE_SECONDS = 0.005;
+    static final long MAX_CALL_MILLIS = 1000;
 
     private final SimRobot robot;
     private final OpMode opMode;
+    private final ExecutorService robotThread = Executors.newSingleThreadExecutor(code -> {
+        Thread thread = new Thread(code, "OpMode");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     public OpModeHarness(SimRobot robot, OpMode opMode) {
         this.robot = robot;
         this.opMode = opMode;
-        wire(robot, opMode);
-    }
-
-    public void init() {
-        runGuarded(opMode::init, "init()");
-        robot.telemetry.update();
-    }
-
-    public void start() {
-        opMode.resetRuntime();
-        runGuarded(opMode::start, "start()");
-        robot.telemetry.update();
-    }
-
-    /** Calls loop() every 20 ms of simulated time, like the real robot controller. */
-    public void loopFor(double seconds) {
-        long loops = Math.round(seconds / LOOP_SECONDS);
-        for (long i = 0; i < loops; i++) {
-            runGuarded(opMode::loop, "loop()");
-            robot.telemetry.update();
-            SimClock.advance(LOOP_SECONDS);
-        }
-    }
-
-    public void stop() {
-        runGuarded(opMode::stop, "stop()");
-        robot.stopAllMotors();
-    }
-
-    /** Runs a LinearOpMode through INIT and START, then presses STOP after the given time. */
-    public static void runLinear(SimRobot robot, LinearOpMode opMode, double seconds) throws InterruptedException {
-        wire(robot, opMode);
-        opMode.simDriver = new LinearDriver(robot, opMode, seconds);
-        try {
-            opMode.runOpMode();
-        } finally {
-            robot.clearWatchdog();
-            robot.stopAllMotors();
-        }
-    }
-
-    public static void runLinear(SimRobot robot, LinearOpMode opMode) throws InterruptedException {
-        runLinear(robot, opMode, AUTO_SECONDS);
-    }
-
-    private static void wire(SimRobot robot, OpMode opMode) {
         opMode.hardwareMap = robot.hardwareMap;
         opMode.telemetry = robot.telemetry;
         opMode.gamepad1 = robot.gamepad1;
         opMode.gamepad2 = robot.gamepad2;
     }
 
-    private void runGuarded(Runnable code, String name) {
-        robot.setWatchdog(SimClock.seconds() + MAX_LOOP_SECONDS, String.format(
-                "%s ran for over %.0f s without returning. Iterative OpModes must not block: "
-                        + "no long while loops or sleeps inside %s.", name, MAX_LOOP_SECONDS, name));
-        try {
-            code.run();
-        } finally {
-            robot.clearWatchdog();
+    public void init() {
+        run(opMode::init, "init()");
+    }
+
+    public void start() {
+        run(opMode::start, "start()");
+    }
+
+    /** Calls loop() the given number of times, like the robot controller does every 20 ms. */
+    public void loop(int times) {
+        for (int i = 0; i < times; i++) {
+            run(opMode::loop, "loop()");
         }
     }
 
-    private static final class LinearDriver implements SimDriver {
-        private final SimRobot robot;
-        private final OpMode opMode;
-        private final double durationSeconds;
-        private boolean started;
-        private double stopAtSeconds = Double.POSITIVE_INFINITY;
+    public void loop() {
+        loop(1);
+    }
 
-        LinearDriver(SimRobot robot, OpMode opMode, double durationSeconds) {
-            this.robot = robot;
-            this.opMode = opMode;
-            this.durationSeconds = durationSeconds;
-        }
+    public void stop() {
+        run(opMode::stop, "stop()");
+        robot.stopAllMotors();
+    }
 
-        @Override
-        public void waitForStart() {
-            if (started) {
-                return;
+    /** Runs OpMode code on its own thread so code that never returns fails the test instead of hanging it. */
+    private void run(Runnable code, String name) {
+        Future<?> call = robotThread.submit(() -> {
+            code.run();
+            robot.telemetry.update();
+        });
+        try {
+            call.get(MAX_CALL_MILLIS, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            throw new OpModeStuckException(String.format(
+                    "%s was still running after %d second and never returned. The robot is frozen: "
+                            + "the Driver Station stops updating and the gamepad does nothing.",
+                    name, MAX_CALL_MILLIS / 1000));
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof RuntimeException runtime) {
+                throw runtime;
             }
-            started = true;
-            opMode.resetRuntime();
-            stopAtSeconds = SimClock.seconds() + durationSeconds;
-            robot.setWatchdog(stopAtSeconds + STOP_GRACE_SECONDS, String.format(
-                    "OpMode was still running %.0f s after STOP was pressed. "
-                            + "Does every loop check opModeIsActive()?", STOP_GRACE_SECONDS));
-        }
-
-        @Override
-        public boolean opModeIsActive() {
-            boolean active = started && !isStopRequested();
-            if (active) {
-                idle();
-            }
-            return active;
-        }
-
-        @Override
-        public boolean isStarted() {
-            return started;
-        }
-
-        @Override
-        public boolean isStopRequested() {
-            return SimClock.seconds() >= stopAtSeconds;
-        }
-
-        @Override
-        public void sleep(long milliseconds) {
-            long endNanos = SimClock.nanoTime() + milliseconds * 1_000_000L;
-            while (SimClock.nanoTime() < endNanos && !isStopRequested()) {
-                SimClock.advance(Math.min(LOOP_SECONDS, (endNanos - SimClock.nanoTime()) / 1e9));
-            }
-        }
-
-        @Override
-        public void idle() {
-            SimClock.advance(IDLE_SECONDS);
+            throw new RuntimeException(e.getCause());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
         }
     }
 }

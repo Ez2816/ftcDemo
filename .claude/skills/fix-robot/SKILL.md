@@ -25,8 +25,9 @@ The bug is in one of these two files. Read only these:
 - `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/RobotHardware.java` (motor directions, mecanum math)
 - `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/MecanumTeleOp.java` (gamepad controls)
 
-Never edit the tests, `TestRobot.java`, or anything in `FtcSim/`. The tests are the spec.
-Use the FTC conventions in `CLAUDE.md` (stick up is negative, left motors are reversed, and so on).
+Never edit the tests or anything in `FtcSim/`. The tests are the spec. The robot configuration
+(the device names on the Driver Station) is in the test's `@BeforeEach`.
+Don't look at git history or diffs to find the bug: read the code.
 
 ## 4. Fix it
 
@@ -40,8 +41,8 @@ Run the same command as step 1. If anything still fails, go back to step 2.
 
 Finish with exactly this format:
 
-### What the robot did on the field
-One or two sentences, in driver terms: what a driver would have seen happen on the field.
+### What the driver would see
+One or two sentences, in driver terms: what would happen at a match when you press INIT, move the sticks, or press a button.
 
 ### Why
 One or two sentences explaining the mistake in the code, for a high school student.

@@ -11,7 +11,6 @@ public class SimTelemetry implements Telemetry {
 
     private final List<String> pending = new ArrayList<>();
     private List<String> screen = List.of();
-    private boolean echo;
 
     @Override
     public Item addData(String caption, Object value) {
@@ -34,9 +33,6 @@ public class SimTelemetry implements Telemetry {
     public boolean update() {
         screen = List.copyOf(pending);
         pending.clear();
-        if (echo) {
-            System.out.printf("[t=%6.2fs] %s%n", SimClock.seconds(), String.join(" | ", screen));
-        }
         return true;
     }
 
@@ -45,24 +41,8 @@ public class SimTelemetry implements Telemetry {
         pending.clear();
     }
 
-    /** Print every update() to the console. */
-    public void setEcho(boolean echo) {
-        this.echo = echo;
-    }
-
     /** What the Driver Station showed after the last update(). */
     public List<String> lines() {
         return screen;
-    }
-
-    /** The value shown next to a caption, or null if that caption is not on screen. */
-    public String value(String caption) {
-        String prefix = caption + " : ";
-        for (String line : screen) {
-            if (line.startsWith(prefix)) {
-                return line.substring(prefix.length());
-            }
-        }
-        return null;
     }
 }

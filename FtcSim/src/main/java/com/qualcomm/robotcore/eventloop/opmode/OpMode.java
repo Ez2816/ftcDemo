@@ -2,7 +2,6 @@ package com.qualcomm.robotcore.eventloop.opmode;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
@@ -15,8 +14,6 @@ public abstract class OpMode {
     public Gamepad gamepad1;
     public Gamepad gamepad2;
 
-    private final ElapsedTime runtime = new ElapsedTime();
-
     public abstract void init();
 
     public void init_loop() {}
@@ -26,13 +23,4 @@ public abstract class OpMode {
     public abstract void loop();
 
     public void stop() {}
-
-    /** Seconds since the OpMode was started. */
-    public double getRuntime() {
-        return runtime.seconds();
-    }
-
-    public void resetRuntime() {
-        runtime.reset();
-    }
 }

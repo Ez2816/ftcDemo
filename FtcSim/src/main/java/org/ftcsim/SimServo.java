@@ -3,6 +3,7 @@ package org.ftcsim;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
+/** A pretend servo. It remembers the position the code gave it. */
 public class SimServo implements Servo {
     private final String name;
     private Direction direction = Direction.FORWARD;
@@ -25,11 +26,6 @@ public class SimServo implements Servo {
     @Override
     public double getPosition() {
         return position;
-    }
-
-    /** Where the servo horn actually points, after applying REVERSE. */
-    public double physicalPosition() {
-        return direction == Direction.FORWARD ? position : 1.0 - position;
     }
 
     @Override

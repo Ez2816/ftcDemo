@@ -39,7 +39,8 @@ public class MecanumTeleOp extends OpMode {
 
         if (gamepad1.a) {
             robot.claw.setPosition(RobotHardware.CLAW_OPEN);
-        } else if (gamepad1.b) {
+        }
+        if (gamepad1.b) {
             robot.claw.setPosition(RobotHardware.CLAW_CLOSED);
         }
 

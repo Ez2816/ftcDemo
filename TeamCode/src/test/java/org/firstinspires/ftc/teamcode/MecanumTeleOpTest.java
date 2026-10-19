@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.ftcsim.OpModeHarness;
-import org.ftcsim.Pose;
 import org.ftcsim.SimMotor;
 import org.ftcsim.SimRobot;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,47 +12,55 @@ import org.junit.jupiter.api.Test;
 
 class MecanumTeleOpTest {
     private SimRobot robot;
-    private OpModeHarness harness;
+    private OpModeHarness driverStation;
 
     @BeforeEach
     void pressInitAndStart() {
-        robot = TestRobot.create();
-        harness = new OpModeHarness(robot, new MecanumTeleOp());
-        harness.init();
-        harness.start();
+        // The robot configuration on the Driver Station.
+        robot = new SimRobot();
+        robot.addMotor("leftFront");
+        robot.addMotor("rightFront");
+        robot.addMotor("leftBack");
+        robot.addMotor("rightBack");
+        robot.addServo("claw");
+
+        driverStation = new OpModeHarness(robot, new MecanumTeleOp());
+        driverStation.init();
+        driverStation.start();
     }
 
     @Test
     void leftStickUpDrivesForward() {
         robot.gamepad1.left_stick_y = -1; // stick up
-        harness.loopFor(1.0);
+        driverStation.loop();
 
-        Pose pose = robot.pose();
-        assertTrue(pose.x() > 20, "should drive forward, but ended at " + pose);
-        assertEquals(0, pose.y(), 1.0, "should not drift sideways: " + pose);
-        assertEquals(0, pose.heading(), 2.0, "should not turn: " + pose);
+        assertWheelPowers(1, 1, 1, 1);
     }
 
     @Test
     void leftStickRightStrafesRight() {
         robot.gamepad1.left_stick_x = 1;
-        harness.loopFor(1.0);
+        driverStation.loop();
 
-        Pose pose = robot.pose();
-        assertTrue(pose.y() < -20, "should strafe right (negative y), but ended at " + pose);
-        assertEquals(0, pose.x(), 1.0, "should not drive forward or back: " + pose);
-        assertEquals(0, pose.heading(), 2.0, "should not turn: " + pose);
+        assertWheelPowers(1, -1, -1, 1);
     }
 
     @Test
     void rightStickRightTurnsClockwise() {
         robot.gamepad1.right_stick_x = 1;
-        harness.loopFor(0.5);
+        driverStation.loop();
 
-        Pose pose = robot.pose();
-        assertTrue(pose.heading() < -30, "should turn clockwise (negative heading), but ended at " + pose);
-        assertEquals(0, pose.x(), 1.0, "should turn in place: " + pose);
-        assertEquals(0, pose.y(), 1.0, "should turn in place: " + pose);
+        assertWheelPowers(1, -1, 1, -1);
+    }
+
+    @Test
+    void lettingGoOfTheSticksStopsTheRobot() {
+        robot.gamepad1.left_stick_y = -1;
+        driverStation.loop();
+        robot.gamepad1.left_stick_y = 0;
+        driverStation.loop();
+
+        assertWheelPowers(0, 0, 0, 0);
     }
 
     @Test
@@ -60,7 +68,7 @@ class MecanumTeleOpTest {
         robot.gamepad1.left_stick_y = -1;
         robot.gamepad1.left_stick_x = 1;
         robot.gamepad1.right_stick_x = 1;
-        harness.loopFor(0.1);
+        driverStation.loop();
 
         for (SimMotor motor : robot.motors()) {
             assertTrue(Math.abs(motor.getRequestedPower()) <= 1.0,
@@ -72,11 +80,10 @@ class MecanumTeleOpTest {
     void slowModeDrivesSlower() {
         robot.gamepad1.left_stick_y = -1;
         robot.gamepad1.right_bumper = true;
-        harness.loopFor(1.0);
+        driverStation.loop();
 
-        double slowDistance = robot.pose().x();
-        double fullSpeedInchesPerSecond = SimMotor.GOBILDA_312_MAX_TICKS_PER_SECOND / TestRobot.TICKS_PER_INCH;
-        assertEquals(fullSpeedInchesPerSecond * MecanumTeleOp.SLOW_MODE_SCALE, slowDistance, 2.0);
+        double slow = MecanumTeleOp.SLOW_MODE_SCALE;
+        assertWheelPowers(slow, slow, slow, slow);
     }
 
     @Test
@@ -84,23 +91,31 @@ class MecanumTeleOpTest {
         assertEquals(RobotHardware.CLAW_CLOSED, robot.servo("claw").getPosition(), 1e-9, "claw starts closed");
 
         robot.gamepad1.a = true;
-        harness.loopFor(0.1);
+        driverStation.loop();
         assertEquals(RobotHardware.CLAW_OPEN, robot.servo("claw").getPosition(), 1e-9, "A opens the claw");
 
         robot.gamepad1.a = false;
         robot.gamepad1.b = true;
-        harness.loopFor(0.1);
+        driverStation.loop();
         assertEquals(RobotHardware.CLAW_CLOSED, robot.servo("claw").getPosition(), 1e-9, "B closes the claw");
     }
 
     @Test
     void stopStopsAllMotors() {
         robot.gamepad1.left_stick_y = -1;
-        harness.loopFor(0.5);
-        harness.stop();
+        driverStation.loop();
+        driverStation.stop();
 
-        for (SimMotor motor : robot.motors()) {
-            assertEquals(0.0, motor.getPower(), motor.getDeviceName() + " still has power after STOP");
-        }
+        assertWheelPowers(0, 0, 0, 0);
+    }
+
+    /** Checks the four wheel powers, in the order leftFront, rightFront, leftBack, rightBack. */
+    private void assertWheelPowers(double leftFront, double rightFront, double leftBack, double rightBack) {
+        double[] expected = {leftFront, rightFront, leftBack, rightBack};
+        double[] actual = {
+            robot.motor("leftFront").getPower(), robot.motor("rightFront").getPower(),
+            robot.motor("leftBack").getPower(), robot.motor("rightBack").getPower(),
+        };
+        assertArrayEquals(expected, actual, 1e-9, "wheel powers (leftFront, rightFront, leftBack, rightBack)");
     }
 }

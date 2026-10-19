@@ -5,15 +5,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 /**
- * All of the robot's hardware in one place, shared by every OpMode.
+ * All of the robot's hardware in one place.
  * Device names must match the robot configuration on the Driver Station.
  */
 public class RobotHardware {
-    // goBILDA 5203 312 RPM motor with 96 mm mecanum wheels.
-    public static final double TICKS_PER_REV = 537.7;
-    public static final double WHEEL_DIAMETER_INCHES = 3.78;
-    public static final double TICKS_PER_INCH = TICKS_PER_REV / (WHEEL_DIAMETER_INCHES * Math.PI);
-
     public static final double CLAW_OPEN = 0.65;
     public static final double CLAW_CLOSED = 0.25;
 
@@ -34,23 +29,13 @@ public class RobotHardware {
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftBack.setDirection(DcMotor.Direction.REVERSE);
 
-        for (DcMotor motor : driveMotors()) {
+        for (DcMotor motor : new DcMotor[] {leftFront, rightFront, leftBack, rightBack}) {
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
     }
 
-    public DcMotor[] driveMotors() {
-        return new DcMotor[] {leftFront, rightFront, leftBack, rightBack};
-    }
-
-    public void setDriveMode(DcMotor.RunMode mode) {
-        for (DcMotor motor : driveMotors()) {
-            motor.setMode(mode);
-        }
-    }
-
     /**
-     * Robot-centric mecanum drive.
+     * Mecanum drive.
      *
      * @param drive  forward is positive
      * @param strafe right is positive
@@ -62,13 +47,19 @@ public class RobotHardware {
         double lb = drive - strafe + turn;
         double rb = drive + strafe - turn;
 
-        // Scale everything down together if any wheel would go over 100%.
-        double max = Math.max(1.0, Math.max(Math.max(Math.abs(lf), Math.abs(rf)), Math.max(Math.abs(lb), Math.abs(rb))));
+        // If any wheel would go over 100%, scale them all down together.
+        double max = Math.max(Math.max(Math.abs(lf), Math.abs(rf)), Math.max(Math.abs(lb), Math.abs(rb)));
+        if (max > 1.0) {
+            lf /= max;
+            rf /= max;
+            lb /= max;
+            rb /= max;
+        }
 
-        leftFront.setPower(lf / max);
-        rightFront.setPower(rf / max);
-        leftBack.setPower(lb / max);
-        rightBack.setPower(rb / max);
+        leftFront.setPower(lf);
+        rightFront.setPower(rf);
+        leftBack.setPower(lb);
+        rightBack.setPower(rb);
     }
 
     public void stopDrive() {
