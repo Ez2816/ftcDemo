@@ -1,0 +1,5 @@
+rootProject.name = 'ftcDemo'
+
+// FtcSim:   stand-in for the FTC SDK so OpModes can run and be tested on a laptop
+// TeamCode: our robot code (same package as a real FtcRobotController project)
+include 'FtcSim', 'TeamCode'
