@@ -9,23 +9,27 @@ Every fix Claude makes gets a red `// ! FIX:` comment on the changed line, so th
 
 1. In VS Code, install the **Better Comments** extension (it's in the repo's recommended list). It turns
    `// !` comments red.
-2. Restart Claude Code so `/fix-robot` and `/handoff` show up.
-3. Make sure you are not in auto mode, so edit approvals show up on screen.
-4. Rehearse each bug once to know the timing.
-5. Start a fresh session (`claude`, not `claude --continue`) and type:
+2. Open `RobotHardware.java` and `MecanumTeleOp.java` in VS Code tabs. They reload on their own after each checkout.
+3. Close any running Claude session (`/exit`). In a terminal, in `~/ftcDemo`:
+   ```
+   git checkout bug/wrong-name
+   claude
+   ```
+   Use `claude`, not `claude --continue`, so the session starts fresh.
+4. Make sure you are not in auto mode, so edit approvals show up on screen.
+5. Type:
    ```
    real demo
    ```
    Claude replies "Ready." and ignores the handoff file and earlier sessions.
 
+Git commands below start with `!`, which runs them right inside Claude Code, so you don't need a second terminal.
+
 ## Bug 1: `bug/wrong-name`
 
 The robot crashes as soon as you press INIT.
 
-1. In a terminal:
-   ```
-   git checkout bug/wrong-name
-   ```
+1. You are already on this branch from setup.
 2. Prompt:
    ```
    Run the tests and tell me the error.
@@ -44,8 +48,8 @@ Press A and the whole robot freezes.
 
 1. Throw away the last fix and switch:
    ```
-   git checkout -- .
-   git checkout bug/infinite-loop
+   ! git checkout -- .
+   ! git checkout bug/infinite-loop
    ```
 2. Prompt:
    ```
@@ -67,8 +71,8 @@ Let go of the sticks and the robot doesn't stop.
 
 1. Throw away the last fix and switch:
    ```
-   git checkout -- .
-   git checkout bug/divide-by-zero
+   ! git checkout -- .
+   ! git checkout bug/divide-by-zero
    ```
 2. Say: "A skill packs that whole workflow into one command, and it runs the same way every time."
 3. Type:
@@ -93,14 +97,15 @@ Let go of the sticks and the robot doesn't stop.
 ## After the demo
 
 ```
-git checkout -- .
-git checkout main
+! git checkout -- .
+! git checkout main
 ```
 
 ## Tips
 
 - If Claude forgets the red tag, say "Add the `// ! FIX:` tag."
-- Run `git checkout -- .` before switching branches, or git refuses with
+- Run `! git checkout -- .` before switching branches, or git refuses with
   "Your local changes would be overwritten".
-- Replay any bug by running `git checkout -- .` on its branch.
+- Replay any bug by running `! git checkout -- .` on its branch.
+- Rehearse each bug once beforehand to know the timing (in a normal session, not "real demo").
 - `HANDOFF.md` is git-ignored, so it stays put when you switch branches.
