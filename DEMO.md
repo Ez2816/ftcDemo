@@ -12,6 +12,11 @@ Every fix Claude makes gets a red `// ! FIX:` comment on the changed line, so th
 2. Restart Claude Code so `/fix-robot` and `/handoff` show up.
 3. Make sure you are not in auto mode, so edit approvals show up on screen.
 4. Rehearse each bug once to know the timing.
+5. Start a fresh session (`claude`, not `claude --continue`) and type:
+   ```
+   real demo
+   ```
+   Claude replies "Ready." and ignores the handoff file and earlier sessions.
 
 ## Bug 1: `bug/wrong-name`
 
