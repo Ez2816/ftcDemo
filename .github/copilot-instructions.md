@@ -28,6 +28,11 @@ so OpModes can be tested without a robot. GitHub Copilot and Claude Code both re
 3. Run the tests after every change and report the actual result.
 4. Explain fixes in terms a high school FTC student would understand: what the robot would have
    done on the field, and why the change fixes it.
+5. **Tag every edit, always.** Every change in `TeamCode/src/main` gets a comment at the end of the changed line
+   (for a change that spans several lines, the first one): `// ! FIX: <what it was and why it broke>`, for example
+   `motor.setPower(power); // ! FIX: was -power, robot drove backward`.
+   The Better Comments VS Code extension shows `// !` comments in red, so the newest fix stands out on screen.
+   Only the newest fix keeps its tag: before adding yours, delete any older `// ! FIX:` comments in `TeamCode`.
 
 ## FTC conventions used here
 

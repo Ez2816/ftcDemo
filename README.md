@@ -54,6 +54,12 @@ Switch back with `git checkout main`.
 Agents read `.github/copilot-instructions.md` (Copilot) and `CLAUDE.md` (Claude Code). Those files explain
 the layout and the ground rules: fix the robot code, not the tests or the sim.
 
-With Claude Code, run the `/fix-robot` skill (`.claude/skills/fix-robot/SKILL.md`). With other agents, try a prompt like:
+Claude Code skills in this repo:
+
+- `/fix-robot` (`.claude/skills/fix-robot/SKILL.md`): runs the tests, fixes the bug, tags the fix, and reports.
+- `/handoff` (`.claude/skills/handoff/SKILL.md`): writes a session summary to the chat and `HANDOFF.md`.
+
+Every fix gets a `// ! FIX:` comment, which the Better Comments extension shows in red.
+See `DEMO.md` for the presenter script. With other agents, try a prompt like:
 
 > Run the tests. One is failing. Find the bug in TeamCode, explain what the robot would do on the field, and fix it.

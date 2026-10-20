@@ -1,3 +1,6 @@
+# /handoff writes this fresh every session
+HANDOFF.md
+
 # Gradle
 .gradle/
 build/
